@@ -6,7 +6,8 @@ flags = [False, False, False, False, False] #order = carry, parity, negative, ze
 reservedTokens = ("+", "-", "&", "|", "^", "!", "~", ">", 
                   "<", "?", ":", "f", "x", "l", "g", "_", 
                   "=", "*", "*+", "*-", "R", "C", "P", "N", 
-                  "Z", "O") #contains list of every reserved token
+                  "Z", "O", "cout", "unout", "snout", "strout", 
+                  "cin", "nin", "strin", "#", "import") #contains list of every reserved token
 labelList = {} #contains all labels and their line number
 functionList = {} #contains all labels and their line number
 lineBackUpList = [] #contains list of lines to return to after function finishes executing

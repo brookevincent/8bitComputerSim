@@ -15,8 +15,6 @@ def SplitCodeIntoLinesAndTokens(code):
     for lineNum in range(len(codeToRun)):
         codeToRun[lineNum] = codeToRun[lineNum].split()
 
-
-
 #returns the two's compliment of a number
 def GetTwosCompliment(num):
     output = (~num) & 0xFF
@@ -148,18 +146,18 @@ def GoToNextCharacter(startingLine, searchedCharacters):
 
 #Goes to the next instance after the starting line of a set of characters in the code
 def GoToLabel(startingLine, labelName):
-    global labelList, codeToRun
-    if labelName in labelList.keys():
-        return labelList[labelName]
+    global codeToRun
+    if labelName in dtk.labelList.keys():
+        return dtk.labelList[labelName]
     else:
         currentLine = 0
         while currentLine < len(codeToRun):
             if len(codeToRun[currentLine]) == 2:
                 if codeToRun[currentLine][0] == "l" and codeToRun[currentLine][1] == labelName:
-                    labelList.update({labelName : currentLine})
+                    dtk.labelList.update({labelName : currentLine})
                     return currentLine
                 elif codeToRun[currentLine][0] == "l":
-                    labelList.update({codeToRun[currentLine][1] : currentLine})
+                    dtk.labelList.update({codeToRun[currentLine][1] : currentLine})
             currentLine+=1
 
         dtk.SendError(f"INVALID NAME ERROR STARTING AT {startingLine}, NO SUCH LABEL \"{labelName}\"")
@@ -363,7 +361,7 @@ def PerformIOOperation(line, lineNumber):
                     elif stringIndex == len(line)-1:
                         outputString+=line[stringIndex]
                 print(outputString.replace("[endl]", "\n"), end="\0")
-        case "nin":
+        case "nin": #numeric in
             if len(line) == 1:
                 dtk.SendError(f"INVALID NUMBER OF ARGUMENTS ON LINE {lineNumber}, NIN REQUIRES 1 ARGUMENT, NONE GIVEN")
             elif len(line) > 2:
@@ -379,7 +377,7 @@ def PerformIOOperation(line, lineNumber):
                     dtk.allocatedMemoryList.update({dtk.variableList[line[1]]: enteredValue})
                 else:
                     dtk.SendError(f"INVALID VARIABLE NAME ON LINE {lineNumber}, VARIABLE NAME DOES NOT EXIST")
-        case "cin":
+        case "cin": #character in
             if len(line) == 1:
                 dtk.SendError(f"INVALID NUMBER OF ARGUMENTS ON LINE {lineNumber}, NIN REQUIRES 1 ARGUMENT, NONE GIVEN")
             elif len(line) > 2:
@@ -393,6 +391,31 @@ def PerformIOOperation(line, lineNumber):
                     dtk.allocatedMemoryList.update({dtk.variableList[line[1]]: ord(enteredValue) & 0xff})
                 else:
                     dtk.SendError(f"INVALID VARIABLE NAME ON LINE {lineNumber}, VARIABLE NAME DOES NOT EXIST")
+        case "strin": #string in
+            if len(line) == 1:
+                dtk.SendError(f"INVALID NUMBER OF ARGUMENTS ON LINE {lineNumber}, STRIN REQUIRES 1 ARGUMENT, NONE GIVEN")
+            elif len(line) > 2:
+                dtk.SendError(f"INVALID NUMBER OF ARGUMENTS ON LINE {lineNumber}, STRIN REQUIRES 1 ARGUMENT, TOO MANY GIVEN")
+            else:
+                enteredValue = input()
+                startingMemoryLoc = "" #memory location where input is placed
+
+                if line[1] in dtk.variableList.keys():
+                    startingMemoryLoc = dtk.variableList[line[1]]
+                elif dtk.ContainsHEXDigits(line[1]) and len(line) == 4:
+                    startingMemoryLoc = int(line[1], 16)
+                else:
+                    dtk.SendError(f"INVALID VARIABLE NAME ON LINE {lineNumber}, VARIABLE NAME DOES NOT EXIST")
+                
+                if startingMemoryLoc != "":
+                    startingMemoryLoc -= 1
+                    for char in enteredValue:
+                        startingMemoryLoc+=1
+                        if startingMemoryLoc > 0xffff:
+                            dtk.SendError(f"INVALID MEMORY LOCATION ON LINE {lineNumber}, MEMORY OVERFLOW")
+                            break
+                        dtk.allocatedMemoryList.update({startingMemoryLoc : ord(char) & 0xff})
+
 
 #adds a library to list
 def AddLibrary(line, lineNumber):
