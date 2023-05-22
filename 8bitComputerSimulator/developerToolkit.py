@@ -1,44 +1,44 @@
 import string 
 
-abortProgram = False
+abort_program = False
 result = 0
 flags = [False, False, False, False, False] #order = carry, parity, negative, zero, overflow
-reservedTokens = ("+", "-", "&", "|", "^", "!", "~", ">", 
-                  "<", "?", ":", "f", "x", "l", "g", "_", 
-                  "=", "*", "*+", "*-", "R", "C", "P", "N", 
-                  "Z", "O", "cout", "unout", "snout", "strout", 
-                  "cin", "nin", "strin", "#", "import") #contains list of every reserved token
-labelList = {} #contains all labels and their line number
-functionList = {} #contains all labels and their line number
-lineBackUpList = [] #contains list of lines to return to after function finishes executing
-allocatedMemoryList = {} #contains list of all allocated memory locations
-variableList = {} #contains list of every vairable and their memory location
+reserved_tokens = ("ADD", "SUB", "AND", "OR", "XOR", "NOT", "TCOMP", "RSH", 
+                  "LSH", "IF", "ELSE", "FUNC", "EXEC", "LABEL", "GOTO", "END", 
+                  "SET", "ALLOC", "PTRA", "PTRD", "DEL","RESULT", "CARRY", "PARITY", "NEGATIVE", 
+                  "ZERO", "OVERFLOW",
+                  "COUT", "UNOUT", "SNOUT", "STROUT", "CIN", "NIN", "STRIN", "LOAD", "//", "ENDPROGRAM") #contains list of every reserved token
+label_list = {} #contains all labels and their line number
+function_list = {} #contains all labels and their line number
+line_back_up_list = [] #contains list of lines to return to after function finishes executing
+allocated_memory_list = {} #contains list of all allocated memory locations
+variable_list = {} #contains list of every vairable and their memory location
 
 #sends an error message and ends the program
-def SendError(message):
-    global abortProgram
-    abortProgram = True
+def send_error(message):
+    global abort_program
+    abort_program = True
     print(message)
 
 #checks if string s only contains hex digits
-def ContainsHEXDigits(s):
+def contains_HEX_digits(s):
     return all(ch in string.hexdigits for ch in s)
 
 #interprates values
-def GetValue(numberAsString, lineNumber):
-    global result, variableList, allocatedMemoryList
-    if ContainsHEXDigits(numberAsString) and len(numberAsString) == 2:
+def get_value(numberAsString, lineNumber):
+    global result, variable_list, allocated_memory_list
+    if contains_HEX_digits(numberAsString) and len(numberAsString) == 2:
         return(int(numberAsString, 16))
-    elif numberAsString == "R":
+    elif numberAsString == "RESULT":
         return result
-    elif numberAsString in variableList.keys():
-        return allocatedMemoryList[variableList[numberAsString]]
+    elif numberAsString in variable_list.keys():
+        return allocated_memory_list[variable_list[numberAsString]]
     else:
-        SendError(f"INVALID ARGUMENT ON LINE {lineNumber}, ARGUMENT MUST BE MEMORY LOCATION OR 2 DIGIT HEX STRING")
+        send_error(f"INVALID ARGUMENT ON LINE {lineNumber}, ARGUMENT MUST BE MEMORY LOCATION OR 2 DIGIT HEX STRING")
         return 0
 
 #sets flags after an operation
-def SetFlags():
+def set_flags():
     global flags
     flags = [False, False, False, False, False] #reset
     #set parity flag
